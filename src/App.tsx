@@ -7,6 +7,29 @@ const data = {
   "slogan": "PESCADOS & PARRILLAS",
   "menu": [
     {
+      "categoria": "PLATOS PERSONALES",
+      "items": [
+        { "nombre": "Ceviche clásico", "descripcion": "Con Papa rellena, Tortita choclo o Papa a la huancaína", "precio": "S/ 10" },
+        { "nombre": "Ceviche de tollo", "descripcion": "Con Papa rellena, Tortita de choclo o Papa a la huancaína", "precio": "S/ 20" },
+        { "nombre": "Ceviche mixto", "descripcion": "Con Papa rellena, Tortita de choclo o Papa a la huancaína", "precio": "S/ 25" },
+        { "nombre": "Leche de tigre", "descripcion": "Con Papa rellena o Tortita de choclo", "precio": "S/ 15" },
+        { "nombre": "Ceviche clásico + Chicharrón", "precio": "S/ 25" },
+        { "nombre": "Ceviche clásico + Arroz/Chaufa", "descripcion": "A escoger: Arroz con mariscos o Chaufa mariscos", "precio": "S/ 25" },
+        { "nombre": "Ceviche Tollo + Arroz/Chaufa", "descripcion": "A escoger: Arroz con mariscos o Chaufa mariscos", "precio": "S/ 27" },
+        { "nombre": "Ceviche mixto + Arroz/Chaufa", "descripcion": "A escoger: Arroz con mariscos o Chaufa mariscos", "precio": "S/ 30" },
+        { "nombre": "Ceviche de conchas negras", "precio": "S/ 25" },
+        { "nombre": "Trío Aymar", "descripcion": "Ceviche clásico, Chicharrón, Arroz o Chaufa", "precio": "S/ 35" },
+        { "nombre": "Ronda marina", "descripcion": "Ceviche, Chicharrón, Leche de tigre, Arroz o Chaufa y Tortita", "precio": "S/ 45" },
+        { "nombre": "Sudado Parihuela", "precio": "S/ 25" },
+        { "nombre": "Chicharrón de pescado", "precio": "S/ 25" },
+        { "nombre": "Chicharrón mixto", "precio": "S/ 25" },
+        { "nombre": "Pellejito acevichado", "precio": "S/ 25" },
+        { "nombre": "Arroz con mariscos", "precio": "S/ 25" },
+        { "nombre": "Chaufa de mariscos", "precio": "S/ 25" },
+        { "nombre": "Chaufa amazónico", "precio": "S/ 25" }
+      ]
+    },
+    {
       "categoria": "FUENTES PARA COMPARTIR",
       "items": [
         { "nombre": "Ceviche de pescado", "precio": "s/40" },
