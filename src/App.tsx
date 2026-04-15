@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { ShoppingBag, Heart, Plus, Search, Menu as MenuIcon, Flame, ChevronRight, Share2 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { ShoppingBag, Heart, Plus, Minus, Search, Menu as MenuIcon, Flame, ChevronRight, Share2, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+const WHATSAPP_NUMBER = "51965424835";
 
 const data = {
   "restaurante": "Aymar",
@@ -82,11 +84,7 @@ const data = {
         { "nombre": "Cuzqueña", "precio": "s/11" }
       ]
     }
-  ],
-  "redes_sociales": {
-    "usuario": "@AymarPescados&Parrillas",
-    "plataformas": ["Facebook", "Instagram", "TikTok"]
-  }
+  ]
 };
 
 const getImageForDish = (name: string) => {
@@ -102,13 +100,61 @@ const getImageForDish = (name: string) => {
   return "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=400";
 };
 
+interface CartItem {
+  nombre: string;
+  precio: string;
+  cantidad: number;
+}
+
 export default function App() {
-  const [cartCount, setCartCount] = useState(0);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showSummary, setShowSummary] = useState(false);
+
+  const cartCount = useMemo(() => cart.reduce((acc, item) => acc + item.cantidad, 0), [cart]);
+
+  const addToCart = (item: any) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.nombre === item.nombre);
+      if (existing) {
+        return prev.map(i => i.nombre === item.nombre ? { ...i, cantidad: i.cantidad + 1 } : i);
+      }
+      return [...prev, { nombre: item.nombre, precio: item.precio || item.precio_medio_litro, cantidad: 1 }];
+    });
+  };
+
+  const updateQuantity = (nombre: string, delta: number) => {
+    setCart(prev => prev.map(i => {
+      if (i.nombre === nombre) {
+        const newQty = i.cantidad + delta;
+        return newQty > 0 ? { ...i, cantidad: newQty } : null;
+      }
+      return i;
+    }).filter(Boolean) as CartItem[]);
+  };
+
+  const calculateTotal = () => {
+    return cart.reduce((acc, item) => {
+      const precioStr = item.precio.replace(/[^\d.]/g, '');
+      const precio = parseFloat(precioStr) || 0;
+      return acc + (precio * item.cantidad);
+    }, 0);
+  };
+
+  const sendToWhatsApp = () => {
+    const total = calculateTotal();
+    let message = `*Hola Aymar, deseo realizar un pedido:*\n\n`;
+    cart.forEach(item => {
+      message += `• ${item.cantidad} x ${item.nombre} (${item.precio})\n`;
+    });
+    message += `\n*TOTAL: S/ ${total.toFixed(2)}*`;
+    
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
 
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden flex flex-col font-sans">
       
-      {/* Header precisely matching screenshot */}
       <header className="sticky top-0 bg-white z-50 px-4 py-3 flex justify-between items-center bg-white/90 backdrop-blur-md">
         <motion.div whileTap={{ scale: 0.95 }} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
           <MenuIcon size={24} className="text-gray-600" />
@@ -119,7 +165,11 @@ export default function App() {
             <span className="text-[10px] font-sans text-gray-500 tracking-[0.2em] font-medium mt-1 uppercase">{data.slogan}</span>
         </div>
 
-        <motion.div whileTap={{ scale: 0.95 }} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center relative">
+        <motion.div 
+          onClick={() => cartCount > 0 && setShowSummary(true)}
+          whileTap={{ scale: 0.95 }} 
+          className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center relative cursor-pointer"
+        >
           <ShoppingBag size={24} className="text-gray-600" />
           {cartCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-aymar-red rounded-full border-2 border-white"></span>
@@ -127,7 +177,6 @@ export default function App() {
         </motion.div>
       </header>
 
-      {/* Marquee matching screenshot */}
       <div className="w-full bg-aymar-cyan py-1.5 overflow-hidden flex items-center">
         <div className="animate-marquee flex gap-4 text-white font-bold text-[11px] tracking-widest uppercase whitespace-nowrap">
           {[...Array(8)].map((_, i) => (
@@ -137,8 +186,6 @@ export default function App() {
       </div>
 
       <main className="flex-1 overflow-y-auto pb-32">
-        
-        {/* Hero Section matching screenshot */}
         <div className="p-4">
           <div className="relative w-full h-64 rounded-3xl overflow-hidden shadow-xl">
             <img 
@@ -157,19 +204,17 @@ export default function App() {
           </div>
         </div>
 
-        {/* Search Bar matching screenshot */}
         <div className="px-4 mb-8">
            <div className="bg-gray-50 rounded-2xl flex items-center px-4 py-4 border border-gray-100 shadow-sm">
              <Search size={20} className="text-gray-400 mr-3" />
              <input 
                type="text" 
-               placeholder="Buscar ceviche, chaufa..." 
+               placeholder="Buscar ceviche..." 
                className="bg-transparent border-none outline-none text-[15px] font-sans w-full text-gray-700 placeholder:text-gray-400"
              />
            </div>
         </div>
 
-        {/* Menu Categories Grid matching screenshot */}
         <div className="px-4">
           {data.menu.map((categoria, catIdx) => (
              <div key={catIdx} className="mb-10">
@@ -183,29 +228,24 @@ export default function App() {
                       <motion.div 
                         key={idx}
                         whileHover={{ y: -5 }}
-                        className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-md border border-gray-50 mb-2"
+                        className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-md border border-gray-50"
                       >
-                         <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                            <img 
-                              src={getImageForDish(item.nombre)} 
-                              alt={item.nombre}
-                              className="w-full h-full object-cover"
-                              referrerPolicy="no-referrer"
-                            />
-                            <button className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm text-gray-400">
+                         <div className="relative aspect-square bg-gray-100">
+                            <img src={getImageForDish(item.nombre)} alt={item.nombre} className="w-full h-full object-cover" />
+                            <button className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-400">
                                <Heart size={16} />
                             </button>
                          </div>
                          <div className="p-4 flex flex-col flex-grow">
                             <h4 className="font-bold text-aymar-dark text-[14px] leading-snug mb-2 flex-grow">{item.nombre}</h4>
                             <div className="flex justify-between items-center mt-2">
-                               <span className="font-bold text-aymar-dark text-lg leading-none">
-                                  {item.precio || (item.precio_medio_litro ? `${item.precio_medio_litro}` : '')}
+                               <span className="font-bold text-aymar-dark text-lg">
+                                  {item.precio || item.precio_medio_litro}
                                </span>
                                <motion.button 
                                  whileTap={{ scale: 0.8 }}
-                                 onClick={() => setCartCount(prev => prev + 1)}
-                                 className="w-8 h-8 bg-aymar-cyan/10 rounded-full flex items-center justify-center text-aymar-cyan hover:bg-aymar-cyan hover:text-white transition-colors"
+                                 onClick={() => addToCart(item)}
+                                 className="w-8 h-8 bg-aymar-cyan/10 rounded-full flex items-center justify-center text-aymar-cyan"
                                >
                                  <Plus size={18} />
                                </motion.button>
@@ -219,27 +259,15 @@ export default function App() {
         </div>
       </main>
 
-      {/* Floating WhatsApp Button */}
-      <div className="fixed bottom-6 right-6 z-40 pointer-events-auto">
-        <button className="w-14 h-14 bg-[#25D366] rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
-           <svg viewBox="0 0 24 24" width="28" height="28" fill="white">
-             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-           </svg>
-        </button>
-      </div>
-
-      {/* Floating Order Bar - Only visible when cartCount > 0 */}
       <AnimatePresence>
-        {cartCount > 0 && (
+        {cartCount > 0 && !showSummary && (
           <motion.div 
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-0 w-full max-w-md p-6 pointer-events-none z-50"
+            initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
+            className="fixed bottom-0 w-full max-w-md p-6 z-40"
           >
-            <div className="glass rounded-[2rem] p-4 flex items-center justify-between pointer-events-auto border border-white/50 shadow-2xl">
+            <div className="glass rounded-[2rem] p-4 flex items-center justify-between border border-white/50 shadow-2xl">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-aymar-dark rounded-2xl flex items-center justify-center relative shadow-inner overflow-hidden">
+                <div className="w-12 h-12 bg-aymar-dark rounded-2xl flex items-center justify-center relative overflow-hidden">
                    <div className="shimmer absolute inset-0 opacity-20"></div>
                    <ShoppingBag size={20} className="text-white" />
                 </div>
@@ -248,15 +276,73 @@ export default function App() {
                   <p className="font-bold text-aymar-dark text-lg">{cartCount} Artículos</p>
                 </div>
               </div>
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button 
+                onClick={() => setShowSummary(true)}
                 className="bg-aymar-cyan text-white px-6 py-3 rounded-2xl flex items-center gap-3 shadow-lg shadow-aymar-cyan/30"
               >
                 <span className="font-bold text-sm">Ver Pedido</span>
                 <ChevronRight size={18} />
-              </motion.button>
+              </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSummary && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end justify-center p-4 lg:p-0"
+          >
+             <motion.div 
+               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+               className="bg-white w-full max-w-md rounded-t-[3rem] p-6 max-h-[85vh] overflow-y-auto"
+             >
+                <div className="flex justify-between items-center mb-6">
+                   <h2 className="font-title text-2xl font-bold text-aymar-dark">Mi Pedido</h2>
+                   <button onClick={() => setShowSummary(false)} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                      <X size={20} className="text-gray-400" />
+                   </button>
+                </div>
+                
+                <div className="space-y-4 mb-8">
+                   {cart.map(item => (
+                      <div key={item.nombre} className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+                         <div className="flex-1">
+                            <h4 className="font-bold text-aymar-dark text-sm">{item.nombre}</h4>
+                            <p className="text-xs text-aymar-cyan font-bold">{item.precio}</p>
+                         </div>
+                         <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-xl border border-gray-100">
+                            <button onClick={() => updateQuantity(item.nombre, -1)} className="text-gray-400"><Minus size={16} /></button>
+                            <span className="font-bold text-sm w-4 text-center">{item.cantidad}</span>
+                            <button onClick={() => updateQuantity(item.nombre, 1)} className="text-aymar-cyan"><Plus size={16} /></button>
+                         </div>
+                         <button onClick={() => updateQuantity(item.nombre, -item.cantidad)} className="text-red-300 ml-1">
+                            <Trash2 size={18} />
+                         </button>
+                      </div>
+                   ))}
+                </div>
+
+                <div className="border-t border-dashed border-gray-200 pt-6 mb-8">
+                   <div className="flex justify-between items-center mb-2">
+                      <span className="text-gray-400 font-medium">Subtotal</span>
+                      <span className="font-bold text-aymar-dark">S/ {calculateTotal().toFixed(2)}</span>
+                   </div>
+                   <div className="flex justify-between items-center">
+                      <h3 className="text-xl font-bold text-aymar-dark">Total a pagar</h3>
+                      <h3 className="text-xl font-bold text-aymar-cyan">S/ {calculateTotal().toFixed(2)}</h3>
+                   </div>
+                </div>
+
+                <button 
+                  onClick={sendToWhatsApp}
+                  className="w-full bg-[#25D366] text-white py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-green-100 hover:scale-[1.02] transition-transform"
+                >
+                   <span className="font-bold">Enviar Pedido a WhatsApp</span>
+                   <ChevronRight size={20} />
+                </button>
+             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
