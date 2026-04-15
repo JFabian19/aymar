@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@1,700;1,800&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -7,26 +7,25 @@
   --font-logo: "Playfair Display", serif;
   
   --color-aymar-cyan: #00B4D8;
-  --color-aymar-dark-cyan: #0077B6;
-  --color-aymar-red: #E63946;
+  --color-aymar-red: #FE2C55;
   --color-aymar-dark: #1A1A1A;
-  --color-aymar-bg: #F8FBFF;
+  --color-aymar-bg: #FFFFFF;
   
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(255, 255, 255, 0.18);
 }
 
 body {
-  background-color: #f0f4f8;
+  background-color: #fafbfc;
   color: #1A1A1A;
   -webkit-font-smoothing: antialiased;
 }
 
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
 }
@@ -37,9 +36,18 @@ body {
 }
 
 .animate-marquee {
-  animation: marquee 25s linear infinite;
+  animation: marquee 30s linear infinite;
   display: flex;
   width: max-content;
+}
+
+/* Custom scrollbar hide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .shimmer {
@@ -51,9 +59,4 @@ body {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
-}
-
-::-webkit-scrollbar {
-  width: 0px;
-  background: transparent;
 }
