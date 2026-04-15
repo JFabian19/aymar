@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Helvetica Neue", Arial, sans-serif;
+  --font-title: "Arial Rounded MT Bold", "Varela Round", "Helvetica Rounded", sans-serif;
+  --font-logo: Georgia, serif;
+  --color-aymar-cyan: #00B4D8;
+  --color-aymar-red: #E63946;
+  --color-aymar-dark: #333333;
+}
+
+body {
+  background-color: #f3f4f6;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+  width: max-content;
+  display: flex;
+}
+
