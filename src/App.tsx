@@ -20,6 +20,8 @@ const translations = {
     enviarWhatsApp: "Enviar Pedido a WhatsApp",
     holaAymar: "*Hola Aymar, deseo realizar un pedido:*",
     totalMsg: "TOTAL",
+    delivery: "Delivery",
+    taper: "Taper",
     descripcion_escolar: "A escoger: Arroz con mariscos o Chaufa mariscos",
     descripcion_acompanamiento: "Con Papa rellena, Tortita choclo o Papa a la huancaína",
     medio_litro: "1/2 Litro",
@@ -46,6 +48,8 @@ const translations = {
     enviarWhatsApp: "Send Order to WhatsApp",
     holaAymar: "*Hello Aymar, I'd like to place an order:*",
     totalMsg: "TOTAL",
+    delivery: "Delivery",
+    taper: "Container",
     descripcion_escolar: "Choice of: Seafood Rice or Seafood Chaufa",
     descripcion_acompanamiento: "With Stuffed Potato, Corn Tortilla or Huancaína Potato",
     medio_litro: "1/2 Liter",
@@ -60,6 +64,9 @@ const translations = {
     }
   }
 };
+
+const DELIVERY_COST = 4;
+const TAPER_COST = 2;
 
 const menuData = {
   "PLATOS PERSONALES": [
@@ -175,6 +182,7 @@ export default function App() {
   const [lang, setLang] = useState<Language>('es');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showSummary, setShowSummary] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const t = translations[lang];
 
@@ -209,7 +217,7 @@ export default function App() {
     }).filter(Boolean) as CartItem[]);
   };
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return cart.reduce((acc, item) => {
       const precioStr = item.precio.replace(/[^\d.]/g, '');
       const precio = parseFloat(precioStr) || 0;
@@ -217,13 +225,21 @@ export default function App() {
     }, 0);
   };
 
+  const calculateTotal = () => {
+    return calculateSubtotal() + DELIVERY_COST + TAPER_COST;
+  };
+
   const sendToWhatsApp = () => {
+    const subtotal = calculateSubtotal();
     const total = calculateTotal();
     let message = `${t.holaAymar}\n\n`;
     cart.forEach(item => {
       message += `• ${item.cantidad} x ${item.nombre} (${item.precio})\n`;
     });
-    message += `\n*${t.totalMsg}: S/ ${total.toFixed(2)}*`;
+    message += `\n*${t.subtotal}: S/ ${subtotal.toFixed(2)}*`;
+    message += `\n*${t.delivery}: S/ ${DELIVERY_COST.toFixed(2)}*`;
+    message += `\n*${t.taper}: S/ ${TAPER_COST.toFixed(2)}*`;
+    message += `\n\n*${t.totalMsg}: S/ ${total.toFixed(2)}*`;
     
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
@@ -329,11 +345,8 @@ export default function App() {
                         whileHover={{ y: -5 }}
                         className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-md border border-gray-50"
                       >
-                         <div className="relative aspect-square bg-gray-100">
+                         <div className="relative aspect-square bg-gray-100 cursor-zoom-in" onClick={() => setSelectedImage(getImageForDish(item.nombre.es))}>
                             <img src={getImageForDish(item.nombre.es)} alt={item.nombre[lang]} className="w-full h-full object-cover" />
-                            <button className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-400">
-                               <Heart size={16} />
-                            </button>
                          </div>
                          <div className="p-4 flex flex-col flex-grow">
                             <h4 className="font-bold text-aymar-dark text-[14px] leading-snug mb-1 flex-grow">{item.nombre[lang]}</h4>
@@ -428,16 +441,24 @@ export default function App() {
                    ))}
                 </div>
 
-                <div className="border-t border-dashed border-gray-200 pt-6 mb-8">
-                   <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-400 font-medium">{t.subtotal}</span>
-                      <span className="font-bold text-aymar-dark">S/ {calculateTotal().toFixed(2)}</span>
-                   </div>
-                   <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-bold text-aymar-dark">{t.totalPagar}</h3>
-                      <h3 className="text-xl font-bold text-aymar-cyan">S/ {calculateTotal().toFixed(2)}</h3>
-                   </div>
-                </div>
+                 <div className="border-t border-dashed border-gray-200 pt-6 mb-8">
+                    <div className="flex justify-between items-center mb-2">
+                       <span className="text-gray-400 font-medium">{t.subtotal}</span>
+                       <span className="font-bold text-aymar-dark">S/ {calculateSubtotal().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center mb-2">
+                       <span className="text-gray-400 font-medium">{(t as any).delivery}</span>
+                       <span className="font-bold text-aymar-dark">S/ {DELIVERY_COST.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center mb-4">
+                       <span className="text-gray-400 font-medium">{(t as any).taper}</span>
+                       <span className="font-bold text-aymar-dark">S/ {TAPER_COST.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <h3 className="text-xl font-bold text-aymar-dark">{t.totalPagar}</h3>
+                       <h3 className="text-xl font-bold text-aymar-cyan">S/ {calculateTotal().toFixed(2)}</h3>
+                    </div>
+                 </div>
 
                 <button 
                   onClick={sendToWhatsApp}
@@ -447,6 +468,37 @@ export default function App() {
                    <ChevronRight size={20} />
                 </button>
              </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-full max-h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img 
+                src={selectedImage} 
+                alt="Preview" 
+                className="max-w-full max-h-[85vh] rounded-3xl shadow-2xl object-contain border-4 border-white/20" 
+              />
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-4 -right-4 w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-red-600 transition-colors border-4 border-white"
+              >
+                <X size={28} strokeWidth={3} />
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
