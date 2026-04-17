@@ -1,98 +1,163 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingBag, Heart, Plus, Minus, Search, Menu as MenuIcon, Flame, ChevronRight, Share2, X, Trash2 } from 'lucide-react';
+import { ShoppingBag, Heart, Plus, Minus, Search, Menu as MenuIcon, Flame, ChevronRight, X, Trash2, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const WHATSAPP_NUMBER = "51965424835";
 
-const data = {
-  "restaurante": "Aymar",
-  "slogan": "PESCADOS & PARRILLAS",
-  "menu": [
-    {
-      "categoria": "PLATOS PERSONALES",
-      "items": [
-        { "nombre": "Ceviche clásico", "descripcion": "Con Papa rellena, Tortita choclo o Papa a la huancaína", "precio": "S/ 10" },
-        { "nombre": "Ceviche de tollo", "descripcion": "Con Papa rellena, Tortita de choclo o Papa a la huancaína", "precio": "S/ 20" },
-        { "nombre": "Ceviche mixto", "descripcion": "Con Papa rellena, Tortita de choclo o Papa a la huancaína", "precio": "S/ 25" },
-        { "nombre": "Leche de tigre", "descripcion": "Con Papa rellena o Tortita de choclo", "precio": "S/ 15" },
-        { "nombre": "Ceviche clásico + Chicharrón", "precio": "S/ 25" },
-        { "nombre": "Ceviche clásico + Arroz/Chaufa", "descripcion": "A escoger: Arroz con mariscos o Chaufa mariscos", "precio": "S/ 25" },
-        { "nombre": "Ceviche Tollo + Arroz/Chaufa", "descripcion": "A escoger: Arroz con mariscos o Chaufa mariscos", "precio": "S/ 27" },
-        { "nombre": "Ceviche mixto + Arroz/Chaufa", "descripcion": "A escoger: Arroz con mariscos o Chaufa mariscos", "precio": "S/ 30" },
-        { "nombre": "Ceviche de conchas negras", "precio": "S/ 25" },
-        { "nombre": "Trío Aymar", "descripcion": "Ceviche clásico, Chicharrón, Arroz o Chaufa", "precio": "S/ 35" },
-        { "nombre": "Ronda marina", "descripcion": "Ceviche, Chicharrón, Leche de tigre, Arroz o Chaufa y Tortita", "precio": "S/ 45" },
-        { "nombre": "Sudado Parihuela", "precio": "S/ 25" },
-        { "nombre": "Chicharrón de pescado", "precio": "S/ 25" },
-        { "nombre": "Chicharrón mixto", "precio": "S/ 25" },
-        { "nombre": "Pellejito acevichado", "precio": "S/ 25" },
-        { "nombre": "Arroz con mariscos", "precio": "S/ 25" },
-        { "nombre": "Chaufa de mariscos", "precio": "S/ 25" },
-        { "nombre": "Chaufa amazónico", "precio": "S/ 25" }
-      ]
-    },
-    {
-      "categoria": "FUENTES PARA COMPARTIR",
-      "items": [
-        { "nombre": "Ceviche de pescado", "precio": "s/40" },
-        { "nombre": "Ceviche mixto", "precio": "s/45" },
-        { "nombre": "Chicharrón de pescado", "precio": "s/40" },
-        { "nombre": "Chicharrón mixto", "precio": "s/45" },
-        { "nombre": "Arroz con mariscos", "precio": "s/40" },
-        { "nombre": "Chaufa de mariscos", "precio": "s/40" },
-        { "nombre": "Dúo Marino Aymar", "precio": "s/50" },
-        { "nombre": "Trio Marino Aymar", "precio": "s/60" },
-        { "nombre": "Trio 3 al Hilo", "descripcion": ["Ceviche de conchas negras", "Ceviche mixto", "Ceviche de chiringuito"], "precio": "s/60" },
-        { "nombre": "Sudado Parihuela", "precio": "s/40" },
-        { "nombre": "Chicharrón de pollo", "precio": "s/40" }
-      ]
-    },
-    {
-      "categoria": "ADICIONALES",
-      "items": [
-        { "nombre": "Papa rellena", "precio": "s/5" },
-        { "nombre": "Tortilla de choclo", "precio": "s/4" },
-        { "nombre": "Yucas fritas", "precio": "s/5" },
-        { "nombre": "Camote", "precio": "s/4" },
-        { "nombre": "Arroz blanco", "precio": "s/4" },
-        { "nombre": "Palabritas", "precio": "s/10" },
-        { "nombre": "Papa a la huancaina", "precio": "s/8" }
-      ]
-    },
-    {
-      "categoria": "BEBIDAS NATURALES",
-      "items": [
-        { "nombre": "Chicha Morada", "precio_medio_litro": "s/6", "precio_un_litro": "s/12" },
-        { "nombre": "Maracuyá", "precio_medio_litro": "s/6", "precio_un_litro": "s/12" },
-        { "nombre": "Chicha de Jora", "precio_medio_litro": "s/6", "precio_un_litro": "s/12" }
-      ]
-    },
-    {
-      "categoria": "Gaseosas",
-      "items": [
-        { "nombre": "Inca Kola Pers.", "precio": "s/3" },
-        { "nombre": "Inca Kola", "precio": "s/5 - s/10" },
-        { "nombre": "Coca Cola", "precio": "s/5 - s/10" },
-        { "nombre": "Gordita", "precio": "s/6" },
-        { "nombre": "Agua Mineral", "precio": "s/3" }
-      ]
-    },
-    {
-      "categoria": "Cerveza",
-      "items": [
-        { "nombre": "Pilsen", "precio": "s/10" },
-        { "nombre": "Cuzqueña", "precio": "s/11" }
-      ]
+type Language = 'es' | 'en';
+
+const translations = {
+  es: {
+    slogan: "PESCADOS & PARRILLAS",
+    marquee: "EL VERDADERO SABOR A MAR • EL SABOR QUE TE ENCANTA • FRESCO TODOS LOS DÍAS • ",
+    searchPlaceholder: "Buscar ceviche...",
+    tuPedido: "Tu Pedido",
+    articulos: "Artículos",
+    verPedido: "Ver Pedido",
+    miPedido: "Mi Pedido",
+    subtotal: "Subtotal",
+    totalPagar: "Total a pagar",
+    enviarWhatsApp: "Enviar Pedido a WhatsApp",
+    holaAymar: "*Hola Aymar, deseo realizar un pedido:*",
+    totalMsg: "TOTAL",
+    descripcion_escolar: "A escoger: Arroz con mariscos o Chaufa mariscos",
+    descripcion_acompanamiento: "Con Papa rellena, Tortita choclo o Papa a la huancaína",
+    medio_litro: "1/2 Litro",
+    un_litro: "1 Litro",
+    categorias: {
+      "PLATOS PERSONALES": "PLATOS PERSONALES",
+      "FUENTES PARA COMPARTIR": "FUENTES PARA COMPARTIR",
+      "ADICIONALES": "ADICIONALES",
+      "BEBIDAS NATURALES": "BEBIDAS NATURALES",
+      "Gaseosas": "Gaseosas",
+      "Cerveza": "Cerveza"
     }
+  },
+  en: {
+    slogan: "FISH & GRILLS",
+    marquee: "THE TRUE TASTE OF THE SEA • THE TASTE YOU LOVE • FRESH EVERY DAY • ",
+    searchPlaceholder: "Search dishes...",
+    tuPedido: "Your Order",
+    articulos: "Items",
+    verPedido: "View Order",
+    miPedido: "My Order",
+    subtotal: "Subtotal",
+    totalPagar: "Total to pay",
+    enviarWhatsApp: "Send Order to WhatsApp",
+    holaAymar: "*Hello Aymar, I'd like to place an order:*",
+    totalMsg: "TOTAL",
+    descripcion_escolar: "Choice of: Seafood Rice or Seafood Chaufa",
+    descripcion_acompanamiento: "With Stuffed Potato, Corn Tortilla or Huancaína Potato",
+    medio_litro: "1/2 Liter",
+    un_litro: "1 Liter",
+    categorias: {
+      "PLATOS PERSONALES": "PERSONAL DISHES",
+      "FUENTES PARA COMPARTIR": "SHARING PLATTERS",
+      "ADICIONALES": "SIDES",
+      "BEBIDAS NATURALES": "NATURAL DRINKS",
+      "Gaseosas": "Sodas",
+      "Cerveza": "Beer"
+    }
+  }
+};
+
+const menuData = {
+  "PLATOS PERSONALES": [
+    { nombre: { es: "Ceviche clásico", en: "Classic Ceviche" }, descripcion: "descripcion_acompanamiento", precio: "S/ 10" },
+    { nombre: { es: "Ceviche de tollo", en: "Tollo Ceviche" }, descripcion: "descripcion_acompanamiento", precio: "S/ 20" },
+    { nombre: { es: "Ceviche mixto", en: "Mixed Ceviche" }, descripcion: "descripcion_acompanamiento", precio: "S/ 25" },
+    { nombre: { es: "Leche de tigre", en: "Tiger's Milk" }, descripcion: "Con Papa rellena o Tortita de choclo", precio: "S/ 15" },
+    { nombre: { es: "Ceviche clásico + Chicharrón", en: "Classic Ceviche + Fried Fish" }, precio: "S/ 25" },
+    { nombre: { es: "Ceviche clásico + Arroz/Chaufa", en: "Classic Ceviche + Rice/Chaufa" }, descripcion: "descripcion_escolar", precio: "S/ 25" },
+    { nombre: { es: "Ceviche Tollo + Arroz/Chaufa", en: "Tollo Ceviche + Rice/Chaufa" }, descripcion: "descripcion_escolar", precio: "S/ 27" },
+    { nombre: { es: "Ceviche mixto + Arroz/Chaufa", en: "Mixed Ceviche + Rice/Chaufa" }, descripcion: "descripcion_escolar", precio: "S/ 30" },
+    { nombre: { es: "Ceviche de conchas negras", en: "Black Clams Ceviche" }, precio: "S/ 25" },
+    { nombre: { es: "Trío Aymar", en: "Aymar Trio" }, descripcion: "Ceviche clásico, Chicharrón, Arroz o Chaufa", precio: "S/ 35" },
+    { nombre: { es: "Ronda marina", en: "Marine Platter" }, descripcion: "Ceviche, Chicharrón, Leche de tigre, Arroz o Chaufa y Tortita", precio: "S/ 45" },
+    { nombre: { es: "Sudado Parihuela", en: "Parihuela Stew" }, precio: "S/ 25" },
+    { nombre: { es: "Chicharrón de pescado", en: "Fried Fish" }, precio: "S/ 25" },
+    { nombre: { es: "Chicharrón mixto", en: "Mixed Fried Seafood" }, precio: "S/ 25" },
+    { nombre: { es: "Pellejito acevichado", en: "Acevichado Fish Skin" }, precio: "S/ 25" },
+    { nombre: { es: "Arroz con mariscos", en: "Seafood Rice" }, precio: "S/ 25" },
+    { nombre: { es: "Chaufa de mariscos", en: "Seafood Chaufa" }, precio: "S/ 25" },
+    { nombre: { es: "Chaufa amazónico", en: "Amazonian Chaufa" }, precio: "S/ 25" }
+  ],
+  "FUENTES PARA COMPARTIR": [
+    { nombre: { es: "Ceviche de pescado", en: "Fish Ceviche" }, precio: "s/40" },
+    { nombre: { es: "Ceviche mixto", en: "Mixed Ceviche" }, precio: "s/45" },
+    { nombre: { es: "Chicharrón de pescado", en: "Fried Fish" }, precio: "s/40" },
+    { nombre: { es: "Chicharrón mixto", en: "Mixed Fried Seafood" }, precio: "s/45" },
+    { nombre: { es: "Arroz con mariscos", en: "Seafood Rice" }, precio: "s/40" },
+    { nombre: { es: "Chaufa de mariscos", en: "Seafood Chaufa" }, precio: "s/40" },
+    { nombre: { es: "Dúo Marino Aymar", en: "Aymar Marine Duo" }, precio: "s/50" },
+    { nombre: { es: "Trio Marino Aymar", en: "Aymar Marine Trio" }, precio: "s/60" },
+    { nombre: { es: "Trio 3 al Hilo", en: "Trio 3 in a Row" }, descripcion: "Ceviche de conchas negras, Ceviche mixto, Ceviche de chiringuito", precio: "s/60" },
+    { nombre: { es: "Sudado Parihuela", en: "Parihuela Stew" }, precio: "s/40" },
+    { nombre: { es: "Chicharrón de pollo", en: "Chicken Chicharron" }, precio: "s/40" }
+  ],
+  "ADICIONALES": [
+    { nombre: { es: "Papa rellena", en: "Stuffed Potato" }, precio: "s/5" },
+    { nombre: { es: "Tortilla de choclo", en: "Corn Tortilla" }, precio: "s/4" },
+    { nombre: { es: "Yucas fritas", en: "Fried Cassava" }, precio: "s/5" },
+    { nombre: { es: "Camote", en: "Sweet Potato" }, precio: "s/4" },
+    { nombre: { es: "Arroz blanco", en: "White Rice" }, precio: "s/4" },
+    { nombre: { es: "Palabritas", en: "Small Clams" }, precio: "s/10" },
+    { nombre: { es: "Papa a la huancaina", en: "Huancaína Potato" }, precio: "s/8" }
+  ],
+  "BEBIDAS NATURALES": [
+    { nombre: { es: "Chicha Morada", en: "Chicha Morada" }, precio: { es: "s/6 - s/12", en: "s/6 - s/12" }, variants: true },
+    { nombre: { es: "Maracuyá", en: "Passion Fruit" }, precio: { es: "s/6 - s/12", en: "s/6 - s/12" }, variants: true },
+    { nombre: { es: "Chicha de Jora", en: "Chicha de Jora" }, precio: { es: "s/6 - s/12", en: "s/6 - s/12" }, variants: true }
+  ],
+  "Gaseosas": [
+    { nombre: { es: "Inca Kola Pers.", en: "Pers. Inca Kola" }, precio: "s/3" },
+    { nombre: { es: "Inca Kola", en: "Inca Kola" }, precio: "s/5 - s/10" },
+    { nombre: { es: "Coca Cola", en: "Coca Cola" }, precio: "s/5 - s/10" },
+    { nombre: { es: "Gordita", en: "Gordita Soda" }, precio: "s/6" },
+    { nombre: { es: "Agua Mineral", en: "Mineral Water" }, precio: "s/3" }
+  ],
+  "Cerveza": [
+    { nombre: { es: "Pilsen", en: "Pilsen" }, precio: "s/10" },
+    { nombre: { es: "Cuzqueña", en: "Cuzqueña" }, precio: "s/11" }
   ]
 };
 
 const getImageForDish = (name: string) => {
+  const images: Record<string, string> = {
+    "Ceviche clásico": "/Ceviche clasico.jpeg",
+    "Ceviche de tollo": "/ceviche_de_tollo.jpeg",
+    "Ceviche mixto": "/ceviche_mixto_3.jpeg",
+    "Leche de tigre": "/Leche de tigre.jpeg",
+    "Ceviche clásico + Chicharrón": "/ceviche_clasico_tortita.jpeg",
+    "Ceviche clásico + Arroz/Chaufa": "/duo_ceviche_arroz.jpeg",
+    "Ceviche Tollo + Arroz/Chaufa": "/duo_ceviche_arroz.jpeg",
+    "Ceviche mixto + Arroz/Chaufa": "/ceviche_mixto_papa_rellena.jpeg",
+    "Ceviche de conchas negras": "/ceviche_conchas_negras.jpeg",
+    "Trío Aymar": "/trio_aymar.jpeg",
+    "Ronda marina": "/ronda_marina.jpeg",
+    "Sudado Parihuela": "/sudado_parihuela.jpeg",
+    "Chicharrón de pescado": "/Chicharron de pescado.jpeg",
+    "Chicharrón mixto": "/chicharron_mixto.jpeg",
+    "Pellejito acevichado": "/chicharron_pescado_2.jpeg",
+    "Arroz con mariscos": "/arroz_con_mariscos.jpeg",
+    "Chaufa de mariscos": "/chaufa_mariscos.jpeg",
+    "Chaufa amazónico": "/chaufa_amazonico.jpeg",
+    "Ceviche de pescado": "/ceviche_clasico_2.jpeg",
+    "Dúo Marino Aymar": "/duo_marino.jpeg",
+    "Trio Marino Aymar": "/trio_marino.jpeg",
+    "Trio 3 al Hilo": "/ceviche_mixto_2.jpeg",
+    "Chicharrón de pollo": "/chicharron_mixto.jpeg",
+    "Palabritas": "/Ceviche de palabritas.jpeg",
+  };
+
+  if (images[name]) return images[name];
+
   const lowerName = name.toLowerCase();
-  if (lowerName.includes('ceviche') || lowerName.includes('leche') || lowerName.includes('chiringuito') || lowerName.includes('marino') || lowerName.includes('hilo')) return "https://images.unsplash.com/photo-1534604973900-c430e31cd2f1?auto=format&fit=crop&q=80&w=400";
-  if (lowerName.includes('chicharrón') || lowerName.includes('pellejito')) return "https://images.unsplash.com/photo-1559742811-822873691df8?auto=format&fit=crop&q=80&w=400";
-  if (lowerName.includes('arroz') || lowerName.includes('chaufa')) return "https://images.unsplash.com/photo-1512132411229-c30391241dd8?auto=format&fit=crop&q=80&w=400";
-  if (lowerName.includes('sudado') || lowerName.includes('parihuela')) return "https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&q=80&w=400";
+  
+  if (lowerName.includes('ceviche') || lowerName.includes('leche') || lowerName.includes('chiringuito') || lowerName.includes('marino') || lowerName.includes('hilo')) return "/Ceviche clasico.jpeg";
+  if (lowerName.includes('chicharrón') || lowerName.includes('pellejito')) return "/Chicharron de pescado.jpeg";
+  if (lowerName.includes('arroz') || lowerName.includes('chaufa')) return "/arroz_con_mariscos.jpeg";
+  if (lowerName.includes('sudado') || lowerName.includes('parihuela')) return "/sudado_parihuela.jpeg";
   if (lowerName.includes('papa') || lowerName.includes('yuca') || lowerName.includes('camote') || lowerName.includes('tortilla') || lowerName.includes('palabritas')) return "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400";
   if (lowerName.includes('chicha') || lowerName.includes('maracuyá')) return "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=400";
   if (lowerName.includes('kola') || lowerName.includes('cola') || lowerName.includes('gordita') || lowerName.includes('agua')) return "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=400";
@@ -107,18 +172,30 @@ interface CartItem {
 }
 
 export default function App() {
+  const [lang, setLang] = useState<Language>('es');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showSummary, setShowSummary] = useState(false);
+
+  const t = translations[lang];
 
   const cartCount = useMemo(() => cart.reduce((acc, item) => acc + item.cantidad, 0), [cart]);
 
   const addToCart = (item: any) => {
+    const nombreStr = item.nombre[lang];
+    let precioStr = item.precio;
+    if (typeof precioStr === 'object') {
+      precioStr = precioStr[lang];
+    }
+    if (!precioStr && item.variants) {
+      precioStr = "s/6"; // Default for drinks if not specified
+    }
+    
     setCart(prev => {
-      const existing = prev.find(i => i.nombre === item.nombre);
+      const existing = prev.find(i => i.nombre === nombreStr);
       if (existing) {
-        return prev.map(i => i.nombre === item.nombre ? { ...i, cantidad: i.cantidad + 1 } : i);
+        return prev.map(i => i.nombre === nombreStr ? { ...i, cantidad: i.cantidad + 1 } : i);
       }
-      return [...prev, { nombre: item.nombre, precio: item.precio || item.precio_medio_litro, cantidad: 1 }];
+      return [...prev, { nombre: nombreStr, precio: precioStr || "0", cantidad: 1 }];
     });
   };
 
@@ -142,27 +219,49 @@ export default function App() {
 
   const sendToWhatsApp = () => {
     const total = calculateTotal();
-    let message = `*Hola Aymar, deseo realizar un pedido:*\n\n`;
+    let message = `${t.holaAymar}\n\n`;
     cart.forEach(item => {
       message += `• ${item.cantidad} x ${item.nombre} (${item.precio})\n`;
     });
-    message += `\n*TOTAL: S/ ${total.toFixed(2)}*`;
+    message += `\n*${t.totalMsg}: S/ ${total.toFixed(2)}*`;
     
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
+  };
+
+  const getTranslatedDescription = (desc: string) => {
+    if (!desc) return null;
+    if (desc === "descripcion_acompanamiento") return t.descripcion_acompanamiento;
+    if (desc === "descripcion_escolar") return t.descripcion_escolar;
+    // For bespoke descriptions, check if it's a key or just text. 
+    // Usually these are strings from the data
+    return desc;
   };
 
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden flex flex-col font-sans">
       
       <header className="sticky top-0 bg-white z-50 px-4 py-3 flex justify-between items-center bg-white/90 backdrop-blur-md">
-        <motion.div whileTap={{ scale: 0.95 }} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
-          <MenuIcon size={24} className="text-gray-600" />
-        </motion.div>
+        <div className="flex gap-2">
+            <motion.button 
+              onClick={() => setLang('es')}
+              whileTap={{ scale: 0.9 }}
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${lang === 'es' ? 'bg-aymar-cyan text-white' : 'bg-gray-100 text-gray-500'}`}
+            >
+              ES
+            </motion.button>
+            <motion.button 
+              onClick={() => setLang('en')}
+              whileTap={{ scale: 0.9 }}
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-colors ${lang === 'en' ? 'bg-aymar-cyan text-white' : 'bg-gray-100 text-gray-500'}`}
+            >
+              EN
+            </motion.button>
+        </div>
         
         <div className="flex flex-col items-center">
             <h1 className="font-logo italic text-3xl text-aymar-cyan leading-none font-bold tracking-tight">Aymar</h1>
-            <span className="text-[10px] font-sans text-gray-500 tracking-[0.2em] font-medium mt-1 uppercase">{data.slogan}</span>
+            <span className="text-[10px] font-sans text-gray-500 tracking-[0.2em] font-medium mt-1 uppercase">{t.slogan}</span>
         </div>
 
         <motion.div 
@@ -179,8 +278,8 @@ export default function App() {
 
       <div className="w-full bg-aymar-cyan py-1.5 overflow-hidden flex items-center">
         <div className="animate-marquee flex gap-4 text-white font-bold text-[11px] tracking-widest uppercase whitespace-nowrap">
-          {[...Array(8)].map((_, i) => (
-            <span key={i}>EL VERDADERO SABOR A MAR • </span>
+          {[...Array(12)].map((_, i) => (
+            <span key={i}>{t.marquee}</span>
           ))}
         </div>
       </div>
@@ -197,7 +296,7 @@ export default function App() {
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="absolute inset-0 flex flex-col justify-end p-6">
                <div className="bg-aymar-cyan text-white text-[10px] font-bold px-3 py-1.5 rounded-lg w-fit mb-3 uppercase tracking-wider">
-                  {data.slogan}
+                  {t.slogan}
                </div>
                <h2 className="text-white font-logo italic text-6xl leading-[0.85] drop-shadow-2xl">Aymar</h2>
             </div>
@@ -209,38 +308,43 @@ export default function App() {
              <Search size={20} className="text-gray-400 mr-3" />
              <input 
                type="text" 
-               placeholder="Buscar ceviche..." 
+               placeholder={t.searchPlaceholder}
                className="bg-transparent border-none outline-none text-[15px] font-sans w-full text-gray-700 placeholder:text-gray-400"
              />
            </div>
         </div>
 
         <div className="px-4">
-          {data.menu.map((categoria, catIdx) => (
+          {Object.entries(menuData).map(([catId, items], catIdx) => (
              <div key={catIdx} className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
                    <Flame className="text-aymar-red" size={28} fill="currentColor" />
-                   <h3 className="font-bold text-aymar-cyan text-2xl tracking-tight uppercase">{categoria.categoria}</h3>
+                   <h3 className="font-bold text-aymar-cyan text-2xl tracking-tight uppercase">{(t.categorias as any)[catId] || catId}</h3>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                   {categoria.items.map((item: any, idx: number) => (
+                   {items.map((item: any, idx: number) => (
                       <motion.div 
                         key={idx}
                         whileHover={{ y: -5 }}
                         className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-md border border-gray-50"
                       >
                          <div className="relative aspect-square bg-gray-100">
-                            <img src={getImageForDish(item.nombre)} alt={item.nombre} className="w-full h-full object-cover" />
+                            <img src={getImageForDish(item.nombre.es)} alt={item.nombre[lang]} className="w-full h-full object-cover" />
                             <button className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center text-gray-400">
                                <Heart size={16} />
                             </button>
                          </div>
                          <div className="p-4 flex flex-col flex-grow">
-                            <h4 className="font-bold text-aymar-dark text-[14px] leading-snug mb-2 flex-grow">{item.nombre}</h4>
+                            <h4 className="font-bold text-aymar-dark text-[14px] leading-snug mb-1 flex-grow">{item.nombre[lang]}</h4>
+                            {item.descripcion && (
+                              <p className="text-[10px] text-gray-400 mb-2 leading-tight">
+                                {getTranslatedDescription(item.descripcion)}
+                              </p>
+                            )}
                             <div className="flex justify-between items-center mt-2">
                                <span className="font-bold text-aymar-dark text-lg">
-                                  {item.precio || item.precio_medio_litro}
+                                  {typeof item.precio === 'object' ? item.precio[lang] : (item.precio || (item.variants ? "S/ 6 - S/ 12" : ""))}
                                </span>
                                <motion.button 
                                  whileTap={{ scale: 0.8 }}
@@ -272,15 +376,15 @@ export default function App() {
                    <ShoppingBag size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tu Pedido</p>
-                  <p className="font-bold text-aymar-dark text-lg">{cartCount} Artículos</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t.tuPedido}</p>
+                  <p className="font-bold text-aymar-dark text-lg">{cartCount} {t.articulos}</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowSummary(true)}
                 className="bg-aymar-cyan text-white px-6 py-3 rounded-2xl flex items-center gap-3 shadow-lg shadow-aymar-cyan/30"
               >
-                <span className="font-bold text-sm">Ver Pedido</span>
+                <span className="font-bold text-sm">{t.verPedido}</span>
                 <ChevronRight size={18} />
               </button>
             </div>
@@ -299,7 +403,7 @@ export default function App() {
                className="bg-white w-full max-w-md rounded-t-[3rem] p-6 max-h-[85vh] overflow-y-auto"
              >
                 <div className="flex justify-between items-center mb-6">
-                   <h2 className="font-title text-2xl font-bold text-aymar-dark">Mi Pedido</h2>
+                   <h2 className="font-title text-2xl font-bold text-aymar-dark">{t.miPedido}</h2>
                    <button onClick={() => setShowSummary(false)} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
                       <X size={20} className="text-gray-400" />
                    </button>
@@ -326,11 +430,11 @@ export default function App() {
 
                 <div className="border-t border-dashed border-gray-200 pt-6 mb-8">
                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-400 font-medium">Subtotal</span>
+                      <span className="text-gray-400 font-medium">{t.subtotal}</span>
                       <span className="font-bold text-aymar-dark">S/ {calculateTotal().toFixed(2)}</span>
                    </div>
                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-bold text-aymar-dark">Total a pagar</h3>
+                      <h3 className="text-xl font-bold text-aymar-dark">{t.totalPagar}</h3>
                       <h3 className="text-xl font-bold text-aymar-cyan">S/ {calculateTotal().toFixed(2)}</h3>
                    </div>
                 </div>
@@ -339,7 +443,7 @@ export default function App() {
                   onClick={sendToWhatsApp}
                   className="w-full bg-[#25D366] text-white py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-green-100 hover:scale-[1.02] transition-transform"
                 >
-                   <span className="font-bold">Enviar Pedido a WhatsApp</span>
+                   <span className="font-bold">{t.enviarWhatsApp}</span>
                    <ChevronRight size={20} />
                 </button>
              </motion.div>
