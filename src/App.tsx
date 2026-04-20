@@ -84,7 +84,6 @@ const menuData = {
     { nombre: { es: "Sudado Parihuela", en: "Parihuela Stew" }, precio: "S/ 25" },
     { nombre: { es: "Chicharrón de pescado", en: "Fried Fish" }, precio: "S/ 25" },
     { nombre: { es: "Chicharrón mixto", en: "Mixed Fried Seafood" }, precio: "S/ 25" },
-    { nombre: { es: "Pellejito acevichado", en: "Acevichado Fish Skin" }, precio: "S/ 25" },
     { nombre: { es: "Arroz con mariscos", en: "Seafood Rice" }, precio: "S/ 25" },
     { nombre: { es: "Chaufa de mariscos", en: "Seafood Chaufa" }, precio: "S/ 25" },
     { nombre: { es: "Chaufa amazónico", en: "Amazonian Chaufa" }, precio: "S/ 25" }
@@ -98,9 +97,7 @@ const menuData = {
     { nombre: { es: "Chaufa de mariscos", en: "Seafood Chaufa" }, precio: "s/40" },
     { nombre: { es: "Dúo Marino Aymar", en: "Aymar Marine Duo" }, precio: "s/50" },
     { nombre: { es: "Trio Marino Aymar", en: "Aymar Marine Trio" }, precio: "s/60" },
-    { nombre: { es: "Trio 3 al Hilo", en: "Trio 3 in a Row" }, descripcion: "Ceviche de conchas negras, Ceviche mixto, Ceviche de chiringuito", precio: "s/60" },
-    { nombre: { es: "Sudado Parihuela", en: "Parihuela Stew" }, precio: "s/40" },
-    { nombre: { es: "Chicharrón de pollo", en: "Chicken Chicharron" }, precio: "s/40" }
+    { nombre: { es: "Sudado Parihuela", en: "Parihuela Stew" }, precio: "s/40" }
   ],
   "ADICIONALES": [
     { nombre: { es: "Papa rellena", en: "Stuffed Potato" }, precio: "s/5" },
@@ -129,35 +126,51 @@ const menuData = {
   ]
 };
 
-const getImageForDish = (name: string) => {
+const getImageForDish = (name: string, catId: string = "") => {
+  const isFuente = catId === "FUENTES PARA COMPARTIR";
   const images: Record<string, string> = {
-    "Ceviche clásico": "/Ceviche clasico.jpeg",
+    "Ceviche clásico": "/Ceviche clásico.jpg",
+    "Ceviche de pescado": "/ceviche de pescado fuente.png",
     "Ceviche de tollo": "/ceviche_de_tollo.jpeg",
-    "Ceviche mixto": "/ceviche_mixto_3.jpeg",
+    "Ceviche mixto_personal": "/ceviche_mixto_personal.jpeg",
+    "Ceviche mixto_fuente": "/Ceviche mixto fuente .png",
     "Leche de tigre": "/Leche de tigre.jpeg",
-    "Ceviche clásico + Chicharrón": "/ceviche_clasico_tortita.jpeg",
-    "Ceviche clásico + Arroz/Chaufa": "/duo_ceviche_arroz.jpeg",
-    "Ceviche Tollo + Arroz/Chaufa": "/duo_ceviche_arroz.jpeg",
-    "Ceviche mixto + Arroz/Chaufa": "/ceviche_mixto_papa_rellena.jpeg",
-    "Ceviche de conchas negras": "/ceviche_conchas_negras.jpeg",
-    "Trío Aymar": "/trio_aymar.jpeg",
+    "Ceviche clásico + Chicharrón": "/ceviche clasico + chicharron.png",
+    "Ceviche clásico + Arroz/Chaufa": "/Ceviche clásico + ArrozChaufa.png",
+    "Ceviche Tollo + Arroz/Chaufa": "/Ceviche Tollo + ArrozChaufa.png",
+    "Ceviche mixto + Arroz/Chaufa": "/Ceviche mixto + ArrozChaufa.png",
+    "Ceviche de conchas negras": "/Ceviche de conchas negras.png",
+    "Trío Aymar": "/trio aymar.png",
     "Ronda marina": "/ronda_marina.jpeg",
     "Sudado Parihuela": "/sudado_parihuela.jpeg",
     "Chicharrón de pescado": "/Chicharron de pescado.jpeg",
     "Chicharrón mixto": "/chicharron_mixto.jpeg",
-    "Pellejito acevichado": "/chicharron_pescado_2.jpeg",
     "Arroz con mariscos": "/arroz_con_mariscos.jpeg",
     "Chaufa de mariscos": "/chaufa_mariscos.jpeg",
     "Chaufa amazónico": "/chaufa_amazonico.jpeg",
-    "Ceviche de pescado": "/ceviche_clasico_2.jpeg",
     "Dúo Marino Aymar": "/duo_marino.jpeg",
-    "Trio Marino Aymar": "/trio_marino.jpeg",
-    "Trio 3 al Hilo": "/ceviche_mixto_2.jpeg",
-    "Chicharrón de pollo": "/chicharron_mixto.jpeg",
-    "Palabritas": "/Ceviche de palabritas.jpeg",
+    "Trio Marino Aymar": "/trio marino aymar.png",
+    "Papa a la huancaina": "/papa a la huancaina.png",
+    "Papa rellena": "/papa rellena.png",
+    "Tortilla de choclo": "/Tortilla de choclo.png",
+    "Yucas fritas": "/yuca frita.png",
+    "Camote": "/camote.png",
+    "Arroz blanco": "/arroz blanco.jpg",
+    "Palabritas": "/Palabritas.png",
+    "Chicha Morada": "/chicha morada.png",
+    "Maracuyá": "/Maracuya.jpg",
+    "Chicha de Jora": "/chicha de jora.png",
+    "Inca Kola Pers.": "/inka cola pers.webp",
+    "Inca Kola": "/Inka Cola.webp",
+    "Coca Cola": "/cocacola.webp",
+    "Gordita": "/gordita.jpeg",
+    "Agua Mineral": "/agua mineral.jpg",
+    "Pilsen": "/pilsen.jpg",
+    "Cuzqueña": "/cuzquena.jpg",
   };
 
-  if (images[name]) return images[name];
+  const key = name === "Ceviche mixto" ? `Ceviche mixto_${isFuente ? 'fuente' : 'personal'}` : name;
+  if (images[key]) return images[key];
 
   const lowerName = name.toLowerCase();
   
@@ -176,6 +189,7 @@ interface CartItem {
   nombre: string;
   precio: string;
   cantidad: number;
+  hasTaper: boolean;
 }
 
 export default function App() {
@@ -188,7 +202,7 @@ export default function App() {
 
   const cartCount = useMemo(() => cart.reduce((acc, item) => acc + item.cantidad, 0), [cart]);
 
-  const addToCart = (item: any) => {
+  const addToCart = (item: any, catId: string) => {
     const nombreStr = item.nombre[lang];
     let precioStr = item.precio;
     if (typeof precioStr === 'object') {
@@ -199,17 +213,22 @@ export default function App() {
     }
     
     setCart(prev => {
-      const existing = prev.find(i => i.nombre === nombreStr);
+      const existing = prev.find(i => i.nombre === nombreStr && i.precio === precioStr);
       if (existing) {
-        return prev.map(i => i.nombre === nombreStr ? { ...i, cantidad: i.cantidad + 1 } : i);
+        return prev.map(i => (i.nombre === nombreStr && i.precio === precioStr) ? { ...i, cantidad: i.cantidad + 1 } : i);
       }
-      return [...prev, { nombre: nombreStr, precio: precioStr || "0", cantidad: 1 }];
+      return [...prev, { 
+        nombre: nombreStr, 
+        precio: precioStr || "0", 
+        cantidad: 1,
+        hasTaper: !["BEBIDAS NATURALES", "Gaseosas", "Cerveza"].includes(catId)
+      }];
     });
   };
 
-  const updateQuantity = (nombre: string, delta: number) => {
+  const updateQuantity = (nombre: string, precio: string, delta: number) => {
     setCart(prev => prev.map(i => {
-      if (i.nombre === nombre) {
+      if (i.nombre === nombre && i.precio === precio) {
         const newQty = i.cantidad + delta;
         return newQty > 0 ? { ...i, cantidad: newQty } : null;
       }
@@ -225,12 +244,17 @@ export default function App() {
     }, 0);
   };
 
+  const calculateTaper = () => {
+    return cart.reduce((acc, item) => acc + (item.hasTaper ? item.cantidad * TAPER_COST : 0), 0);
+  };
+
   const calculateTotal = () => {
-    return calculateSubtotal() + DELIVERY_COST + TAPER_COST;
+    return calculateSubtotal() + DELIVERY_COST + calculateTaper();
   };
 
   const sendToWhatsApp = () => {
     const subtotal = calculateSubtotal();
+    const taper = calculateTaper();
     const total = calculateTotal();
     let message = `${t.holaAymar}\n\n`;
     cart.forEach(item => {
@@ -238,7 +262,7 @@ export default function App() {
     });
     message += `\n*${t.subtotal}: S/ ${subtotal.toFixed(2)}*`;
     message += `\n*${t.delivery}: S/ ${DELIVERY_COST.toFixed(2)}*`;
-    message += `\n*${t.taper}: S/ ${TAPER_COST.toFixed(2)}*`;
+    message += `\n*${t.taper}: S/ ${taper.toFixed(2)}*`;
     message += `\n\n*${t.totalMsg}: S/ ${total.toFixed(2)}*`;
     
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -304,8 +328,8 @@ export default function App() {
         <div className="p-4">
           <div className="relative w-full h-64 rounded-3xl overflow-hidden shadow-xl">
             <img 
-              src="https://images.unsplash.com/photo-1551248429-40975aa4de74?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-              alt="Ceviche Hero" 
+              src="/banner.png" 
+              alt="Aymar Hero" 
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -345,8 +369,8 @@ export default function App() {
                         whileHover={{ y: -5 }}
                         className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-md border border-gray-50"
                       >
-                         <div className="relative aspect-square bg-gray-100 cursor-zoom-in" onClick={() => setSelectedImage(getImageForDish(item.nombre.es))}>
-                            <img src={getImageForDish(item.nombre.es)} alt={item.nombre[lang]} className="w-full h-full object-cover" />
+                         <div className="relative aspect-square bg-gray-100 cursor-zoom-in" onClick={() => setSelectedImage(getImageForDish(item.nombre.es, catId))}>
+                            <img src={getImageForDish(item.nombre.es, catId)} alt={item.nombre[lang]} className="w-full h-full object-cover" />
                          </div>
                          <div className="p-4 flex flex-col flex-grow">
                             <h4 className="font-bold text-aymar-dark text-[14px] leading-snug mb-1 flex-grow">{item.nombre[lang]}</h4>
@@ -361,7 +385,7 @@ export default function App() {
                                </span>
                                <motion.button 
                                  whileTap={{ scale: 0.8 }}
-                                 onClick={() => addToCart(item)}
+                                 onClick={() => addToCart(item, catId)}
                                  className="w-8 h-8 bg-aymar-cyan/10 rounded-full flex items-center justify-center text-aymar-cyan"
                                >
                                  <Plus size={18} />
@@ -424,17 +448,17 @@ export default function App() {
                 
                 <div className="space-y-4 mb-8">
                    {cart.map(item => (
-                      <div key={item.nombre} className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+                      <div key={`${item.nombre}-${item.precio}`} className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
                          <div className="flex-1">
                             <h4 className="font-bold text-aymar-dark text-sm">{item.nombre}</h4>
                             <p className="text-xs text-aymar-cyan font-bold">{item.precio}</p>
                          </div>
                          <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-xl border border-gray-100">
-                            <button onClick={() => updateQuantity(item.nombre, -1)} className="text-gray-400"><Minus size={16} /></button>
+                            <button onClick={() => updateQuantity(item.nombre, item.precio, -1)} className="text-gray-400"><Minus size={16} /></button>
                             <span className="font-bold text-sm w-4 text-center">{item.cantidad}</span>
-                            <button onClick={() => updateQuantity(item.nombre, 1)} className="text-aymar-cyan"><Plus size={16} /></button>
+                            <button onClick={() => updateQuantity(item.nombre, item.precio, 1)} className="text-aymar-cyan"><Plus size={16} /></button>
                          </div>
-                         <button onClick={() => updateQuantity(item.nombre, -item.cantidad)} className="text-red-300 ml-1">
+                         <button onClick={() => updateQuantity(item.nombre, item.precio, -item.cantidad)} className="text-red-300 ml-1">
                             <Trash2 size={18} />
                          </button>
                       </div>
@@ -452,7 +476,7 @@ export default function App() {
                     </div>
                     <div className="flex justify-between items-center mb-4">
                        <span className="text-gray-400 font-medium">{(t as any).taper}</span>
-                       <span className="font-bold text-aymar-dark">S/ {TAPER_COST.toFixed(2)}</span>
+                       <span className="font-bold text-aymar-dark">S/ {calculateTaper().toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                        <h3 className="text-xl font-bold text-aymar-dark">{t.totalPagar}</h3>
