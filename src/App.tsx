@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ShoppingBag, Heart, Plus, Minus, Search, Menu as MenuIcon, Flame, ChevronRight, X, Trash2, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Papa from 'papaparse';
 
 const WHATSAPP_NUMBER = "51965424835";
 
@@ -22,6 +23,7 @@ const translations = {
     totalMsg: "TOTAL",
     delivery: "Delivery",
     taper: "Taper",
+    eligeAcompanamiento: "Elige una opción:",
     descripcion_escolar: "A escoger: Arroz con mariscos o Chaufa mariscos",
     descripcion_acompanamiento: "Con Papa rellena, Tortita choclo o Papa a la huancaína",
     medio_litro: "1/2 Litro",
@@ -50,6 +52,7 @@ const translations = {
     totalMsg: "TOTAL",
     delivery: "Delivery",
     taper: "Container",
+    eligeAcompanamiento: "Choose an option:",
     descripcion_escolar: "Choice of: Seafood Rice or Seafood Chaufa",
     descripcion_acompanamiento: "With Stuffed Potato, Corn Tortilla or Huancaína Potato",
     medio_litro: "1/2 Liter",
@@ -68,7 +71,7 @@ const translations = {
 const DELIVERY_COST = 4;
 const TAPER_COST = 2;
 
-const menuData = {
+const initialMenuData = {
   "PLATOS PERSONALES": [
     { nombre: { es: "Ceviche clásico", en: "Classic Ceviche" }, descripcion: "descripcion_acompanamiento", precio: "S/ 10" },
     { nombre: { es: "Ceviche de tollo", en: "Tollo Ceviche" }, descripcion: "descripcion_acompanamiento", precio: "S/ 20" },
@@ -185,6 +188,13 @@ const getImageForDish = (name: string, catId: string = "") => {
   return "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=400";
 };
 
+const getOptionsForDish = (name: string): string[] | null => {
+  if (["Ceviche clásico", "Ceviche de tollo", "Ceviche mixto", "Ceviche de pescado"].includes(name)) return ["Papa rellena", "Tortita choclo", "Papa a la huancaína"];
+  if (name === "Leche de tigre") return ["Papa rellena", "Tortita de choclo"];
+  if (["Ceviche clásico + Arroz/Chaufa", "Ceviche Tollo + Arroz/Chaufa", "Ceviche mixto + Arroz/Chaufa", "Trío Aymar", "Ronda marina"].includes(name)) return ["Arroz con mariscos", "Chaufa mariscos"];
+  return null;
+};
+
 interface CartItem {
   nombre: string;
   precio: string;
@@ -197,13 +207,78 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [optionModal, setOptionModal] = useState<{item: any, catId: string, options: string[]} | null>(null);
+  const [menuData, setMenuData] = useState<Record<string, any[]>>(initialMenuData);
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID;
+        const urlPlatos = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Platos`;
+        
+        const resPlatos = await fetch(urlPlatos);
+        const csvPlatos = await resPlatos.text();
+        
+        const parsedPlatos = Papa.parse(csvPlatos, { header: true }).data as any[];
+        const categoriesMap = new Map<string, any[]>();
+
+        parsedPlatos.forEach(row => {
+          const cat = row.Categoria ? row.Categoria.trim() : "";
+          const nombre = row['Nombre Plato'] ? row['Nombre Plato'].trim() : "";
+          if (!cat || !nombre) return;
+          
+          const descripcion = row.Descripcion ? row.Descripcion.trim() : undefined;
+          const precio = row.Precio ? row.Precio.trim() : "";
+          const imgUrl = row['URL de Imagen'] ? row['URL de Imagen'].trim() : "";
+
+          const itemData = {
+            nombre: { es: nombre, en: nombre },
+            descripcion,
+            precio,
+            imageOverride: imgUrl || undefined
+          };
+
+          if (!categoriesMap.has(cat)) {
+            categoriesMap.set(cat, []);
+          }
+          categoriesMap.get(cat)?.push(itemData);
+        });
+
+        const newMenuData: any = {};
+        let count = 0;
+        categoriesMap.forEach((items, cat) => {
+          if (items.length > 0) {
+            newMenuData[cat] = items;
+            count++;
+          }
+        });
+
+        if (count > 0) {
+          setMenuData(newMenuData);
+        }
+      } catch (err) {
+        console.error("Error fetching Google Sheets menu data:", err);
+      }
+    };
+    fetchMenu();
+  }, []);
 
   const t = translations[lang];
 
   const cartCount = useMemo(() => cart.reduce((acc, item) => acc + item.cantidad, 0), [cart]);
 
-  const addToCart = (item: any, catId: string) => {
-    const nombreStr = item.nombre[lang];
+  const promptAddToCart = (item: any, catId: string) => {
+    const options = getOptionsForDish(item.nombre.es);
+    if (options) {
+      setOptionModal({ item, catId, options });
+    } else {
+      addToCart(item, catId);
+    }
+  };
+
+  const addToCart = (item: any, catId: string, selectedOption?: string) => {
+    const baseNombreStr = item.nombre[lang];
+    const nombreStr = selectedOption ? `${baseNombreStr} + ${selectedOption}` : baseNombreStr;
     let precioStr = item.precio;
     if (typeof precioStr === 'object') {
       precioStr = precioStr[lang];
@@ -369,8 +444,8 @@ export default function App() {
                         whileHover={{ y: -5 }}
                         className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-md border border-gray-50"
                       >
-                         <div className="relative aspect-square bg-gray-100 cursor-zoom-in" onClick={() => setSelectedImage(getImageForDish(item.nombre.es, catId))}>
-                            <img src={getImageForDish(item.nombre.es, catId)} alt={item.nombre[lang]} className="w-full h-full object-cover" />
+                         <div className="relative aspect-square bg-gray-100 cursor-zoom-in" onClick={() => setSelectedImage(item.imageOverride || getImageForDish(item.nombre.es, catId))}>
+                            <img src={item.imageOverride || getImageForDish(item.nombre.es, catId)} alt={item.nombre[lang]} className="w-full h-full object-cover" />
                          </div>
                          <div className="p-4 flex flex-col flex-grow">
                             <h4 className="font-bold text-aymar-dark text-[14px] leading-snug mb-1 flex-grow">{item.nombre[lang]}</h4>
@@ -385,7 +460,7 @@ export default function App() {
                                </span>
                                <motion.button 
                                  whileTap={{ scale: 0.8 }}
-                                 onClick={() => addToCart(item, catId)}
+                                 onClick={() => promptAddToCart(item, catId)}
                                  className="w-8 h-8 bg-aymar-cyan/10 rounded-full flex items-center justify-center text-aymar-cyan"
                                >
                                  <Plus size={18} />
@@ -495,6 +570,49 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {optionModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setOptionModal(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[2rem] p-6 w-full max-w-sm flex flex-col shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-aymar-dark text-xl">{optionModal.item.nombre[lang]}</h3>
+                <button onClick={() => setOptionModal(null)} className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center">
+                  <X size={16} className="text-gray-400" />
+                </button>
+              </div>
+              <p className="text-gray-500 text-sm mb-4">{(t as any).eligeAcompanamiento}</p>
+              <div className="flex flex-col gap-2 mb-2">
+                {optionModal.options.map(opt => (
+                  <button 
+                    key={opt}
+                    onClick={() => {
+                       addToCart(optionModal.item, optionModal.catId, opt);
+                       setOptionModal(null);
+                    }}
+                    className="py-3 px-4 bg-gray-50 hover:bg-aymar-cyan hover:text-white rounded-xl text-left font-medium transition-colors border border-gray-100 shadow-sm"
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {selectedImage && (
           <motion.div 
